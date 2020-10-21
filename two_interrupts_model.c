@@ -21,10 +21,12 @@ struct {
   int max_latency;
   int counter;
   int totaltime;
+  int runtally_array[50];
+  int test;
+  int test2;
 } inter[INTERRUPTS] = {
-  {.prob = 0.1, .priority = 1, .run_time = 3, .active = 0, .missed = 0, .pending = 0, .max_latency = 3, .counter = 0, .totaltime = 0 },
-  {.prob = 0.03, .priority = 2, .run_time = 5, .active = 0, .missed = 0, .pending = 0, .max_latency = 5, .counter = 0, .totaltime = 0 }};
-
+  {.prob = 0.1, .priority = 1, .run_time = 3, .active = 0, .missed = 0, .pending = 0, .max_latency = 3, .counter = 0, .totaltime = 0, .runtally_array = {0}, .test=0, .test2=0 },
+  {.prob = 0.03, .priority = 2, .run_time = 5, .active = 0, .missed = 0, .pending = 0, .max_latency = 5, .counter = 0, .totaltime = 0, .runtally_array = {0},.test=0, .test2=0 }};
 int hist_data[BINS][INTERRUPTS]; /* Stores histogram data for each interrupt */
 void histogram(int inter_no, int val); /* Puts val in the right bin for interrupt inter_no */
 int clock_time = 0;
@@ -32,10 +34,10 @@ int clock_time = 0;
 main() {
   int fire;
   int trigger[INTERRUPTS];
-  int i, j, active, pending, priority;
+  int i, j,k,active, pending, priority;
   time_t seconds;
   seconds = time(NULL);
-
+ // int *runtally_array[2][50];
   srand(seconds);
 
   while (clock_time < CYCLES) {
@@ -77,8 +79,10 @@ main() {
     {
       if (inter[active].run_time <= clock_time - inter[active].start_time) { /* somebody has finished executing */
 	inter[active].active = 0;
-
+	
 	histogram(active, clock_time-inter[active].arrive_time_present);
+	inter[active].runtally_array[(clock_time-inter[active].arrive_time_present)-1] +=1; 
+	inter[active].test +=1;
 	inter[active].totaltime +=(clock_time-inter[active].arrive_time_present);
 	if (pending != -1) { /* Highest priority pending interrupt is made active */
 	  inter[pending].active = 1;
@@ -121,6 +125,10 @@ main() {
            printf("Number of missed interrupt %d's: %d\n",i,inter[i].missed);
 	   printf("Max latency for interrupt %d: %d\n",i,inter[i].max_latency);
 	   printf("Total interrupt time in cycles: %d\n",inter[i].totaltime);
+	   for(k = 0; k<30; k++)
+	   {
+		   printf("Total number of times interrupt was %d cycles: %d\n", k+1,inter[i].runtally_array[k]);
+	   }
 	   printf("Histogram data for interrupt %d\n",i);
 	   for (j=0; j<BINS; j++)
 	   {
@@ -129,6 +137,8 @@ main() {
 	   printf("\n");
 	   }
 	   printf("Total number of successful interrupts: %d\n",inter[i].counter);
+	   printf("Test: number of total interrupts? %d\n",inter[i].test);
+	//   printf("Test: number of total time/interrupts? %d\n",inter[i].test2);
 	}
 
 
